@@ -1,0 +1,12 @@
+[
+  {
+    "collection": "user",
+    "indexes": [
+      { "email": -1 },
+      { "verificationCode": -1 },
+      { "resetPasswordCode": -1 },
+      { "createdAt": -1 },
+      { "updatedAt": -1 }
+    ]
+  }
+]
