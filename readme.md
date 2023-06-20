@@ -34,7 +34,7 @@ Options:
 
   -f, --file <file>          path to indexes file (defaults to indexes.json in current directory)
   -i --uri <uri>             connection string for MongoDB
-  -d, --db <database>  database name
+  -d, --db <database>        database name
 ```
 
 ### Configuration
