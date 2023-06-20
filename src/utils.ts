@@ -1,4 +1,4 @@
-import { MongoIndex, GivenConfig, PreparedIndex } from "./index";
+import { GivenConfig, MongoIndex, PreparedIndex } from "./index";
 import kleur from "kleur";
 
 export function generateNameForIndex(index: GivenConfig["indexes"][0]) {
@@ -13,6 +13,22 @@ export type IndexDiff = {
   toCreate: PreparedIndex[];
   toDrop: MongoIndex[];
 }[];
+
+export function mongoIndexToUserConfig(
+  indexes: Record<string, MongoIndex[]>
+): GivenConfig[] {
+  return Object.keys(indexes)
+    .map((collectionName) => {
+      return {
+        collection: collectionName,
+        // @todo populate @isUnique and @expireAfterSeconds
+        indexes: indexes[collectionName]
+          .filter((index) => index.name !== "_id_")
+          .map((index) => index.keys),
+      };
+    })
+    .filter((collection) => collection.indexes.length > 0);
+}
 
 export function getIndexDiff(
   existingIndexes: Record<string, MongoIndex[]>,
@@ -70,9 +86,29 @@ export function getIndexDiff(
   return indexDiff;
 }
 
-export function printHeader(title: string) {
+export function printSeparator() {
   console.log("-".repeat(50));
-  console.log(kleur.bold(`${title}`));
+}
+
+export function fatal(message: string, error?: Error) {
+  console.log(kleur.red().bold(message));
+  if (error) {
+    console.log(kleur.red().bold(error.message));
+  }
+
+  process.exit(1);
+}
+
+export function printHeader(title: string) {
+  console.log(kleur.underline().bold(`${title}`));
+}
+
+export function printInfo(message: string) {
+  console.log(kleur.gray(message));
+}
+
+export function printSuccess(message: string) {
+  console.log(kleur.bold().green(message));
 }
 
 export function printCreateIndex(index: PreparedIndex, prefix = "+ Create") {
@@ -103,7 +139,7 @@ export function printDropIndex(index: MongoIndex, prefix = "- Drop") {
 
 export function printDiff(diff: IndexDiff) {
   if (!diff.length) {
-    console.log(kleur.gray().bold("No changes required"));
+    printInfo("No changes required");
     return;
   }
 
@@ -113,22 +149,17 @@ export function printDiff(diff: IndexDiff) {
       continue;
     }
 
-    printHeader(`- Collection: ${collection}`);
+    printHeader(`Collection: ${collection}`);
     if (toCreate.length) {
-      console.log("-".repeat(50));
       for (const index of toCreate) {
         printCreateIndex(index);
       }
     }
 
     if (toDrop.length) {
-      console.log("-".repeat(50));
       for (const index of toDrop) {
         printDropIndex(index);
       }
     }
-
-    console.log("-".repeat(50));
-    console.log("\n");
   }
 }

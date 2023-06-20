@@ -1,5 +1,5 @@
-import { getIndexDiff, IndexDiff } from "../utils";
-import { MongoIndex, PreparedIndex } from "../index";
+import { getIndexDiff, IndexDiff } from "../src/utils";
+import { MongoIndex, PreparedIndex } from "../src";
 
 describe("getIndexDiff", () => {
   const existingIndexes: Record<string, MongoIndex[]> = {

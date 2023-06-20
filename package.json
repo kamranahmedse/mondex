@@ -1,11 +1,23 @@
 {
   "name": "mondex",
   "version": "1.0.0",
-  "description": "",
+  "description": "CLI to index MongoDB collections",
+  "type": "module",
+  "author": {
+    "name": "Kamran Ahmed",
+    "email": "kamranahmed.se@gmail.com",
+    "url": "https://github.com/kamranahmedse"
+  },
   "main": "index.js",
+  "bin": {
+    "mondex": "./bin/index.js"
+  },
   "scripts": {
-    "dev": "ts-node index.ts",
-    "test": "jest"
+    "dev": "tsup --watch",
+    "test": "jest",
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "commander": "^11.0.0",
@@ -18,9 +30,37 @@
     "prettier": "^2.8.8",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
+    "tsup": "^7.0.0",
     "typescript": "^5.1.3"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "files": [
+    "!tests/**/*",
+    "dist/**/*",
+    "!dist/**/*.js.map",
+    "bin/**/*"
+  ],
+  "keywords": [
+    "mongodb",
+    "index",
+    "cli",
+    "mongodb-index",
+    "mongodb-cli",
+    "mongo-indexer",
+    "index-mongodb",
+    "index",
+    "mondex",
+    "mongo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kamranahmedse/mondex.git"
+  },
+  "engines": {
+    "node": ">=12.0"
+  },
+  "bugs": {
+    "url": "https://github.com/kamranahmedse/mondex/issues"
+  },
+  "homepage": "https://github.com/kamranahmedse/mondex#readme",
+  "license": "MIT"
 }

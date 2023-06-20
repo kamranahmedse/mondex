@@ -1,4 +1,4 @@
-import { generateNameForIndex } from "../utils";
+import { generateNameForIndex } from "../src/utils";
 
 describe("Tests index creation", function () {
   // Disable console and MongoDB

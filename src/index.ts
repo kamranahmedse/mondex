@@ -1,14 +1,20 @@
+import { Command } from "commander";
 import { Db, MongoClient } from "mongodb";
 import fs from "node:fs";
 import path from "node:path";
 import {
+  fatal,
   generateNameForIndex,
   getIndexDiff,
   IndexDiff,
+  mongoIndexToUserConfig,
   printCreateIndex,
   printDiff,
   printDropIndex,
   printHeader,
+  printInfo,
+  printSeparator,
+  printSuccess,
 } from "./utils";
 import kleur from "kleur";
 
@@ -95,10 +101,8 @@ async function applyDiff(diff: IndexDiff) {
 
     const collectionObject = db.collection(collection);
 
-    printHeader(`- Collection: ${collection}`);
+    printHeader(`Collection: ${collection}`);
     if (toDrop.length) {
-      console.log("-".repeat(50));
-
       for (let index of toDrop) {
         printDropIndex(index, "- Dropping index");
         await collectionObject.dropIndex(index.name);
@@ -106,7 +110,6 @@ async function applyDiff(diff: IndexDiff) {
     }
 
     if (toCreate.length) {
-      console.log("-".repeat(50));
       for (let index of toCreate) {
         printCreateIndex(index, "+ Creating index");
         await collectionObject.createIndex(index.keys, {
@@ -121,35 +124,121 @@ async function applyDiff(diff: IndexDiff) {
   }
 }
 
-async function run() {
-  // TODO: CLI Arguments
-  // command can either be plan or apply
-  let command: string = "apply";
-  let connectionString: string = "mongodb://localhost:27017/roadmapsh";
-  let dbName = "roadmapsh";
-  let filePath: string = path.join(__dirname, "./indexes.json");
+type RunOptions = {
+  file: string;
+  db: string;
+  uri: string;
+};
 
-  client = await MongoClient.connect(connectionString);
-  db = client.db(dbName);
+function plan(options: RunOptions) {
+  return execute({ ...options, command: "plan" });
+}
+
+function apply(options: RunOptions) {
+  return execute({ ...options, command: "apply" });
+}
+
+function pull(options: RunOptions) {
+  const { file } = options;
+  if (fs.existsSync(file) && fs.readFileSync(file)) {
+    fatal(`A non-empty file exists at: ${file}`);
+  }
+
+  fs.writeFileSync(file, "");
+
+  return execute({ ...options, command: "pull" });
+}
+
+const allowedCommands = ["plan", "apply", "pull"] as const;
+
+async function execute(
+  options: RunOptions & { command: (typeof allowedCommands)[number] }
+) {
+  const { command, file, db: database, uri } = options;
+
+  if (!fs.existsSync(file)) {
+    fatal(`File ${file} does not exist`);
+  }
+
+  try {
+    client = await MongoClient.connect(uri);
+    db = client.db(database);
+  } catch (err) {
+    printSeparator();
+    fatal(`Failed to connect to MongoDB`, err as Error);
+  }
 
   const existingIndexes = await getAllIndexes();
-  const givenIndexes = prepareGivenIndexes(filePath);
+  if (command === "pull") {
+    if (!Object.keys(existingIndexes).length) {
+      printInfo("No existing indexes found");
+      fs.rmSync(file);
+      process.exit(0);
+    }
 
+    fs.writeFileSync(
+      file,
+      JSON.stringify(mongoIndexToUserConfig(existingIndexes), null, 2)
+    );
+
+    printSuccess(`Config file written at: ${file}`);
+    process.exit(0);
+  }
+
+  const givenIndexes = prepareGivenIndexes(file);
   const indexDiff = getIndexDiff(existingIndexes, givenIndexes);
 
-  if (command === "plan") {
-    printDiff(indexDiff);
-  } else {
+  if (command == "apply") {
     await applyDiff(indexDiff).catch((err) => {
       console.error(err);
     });
+  } else if (command == "plan") {
+    printDiff(indexDiff);
+  } else {
+    fatal(`Unknown command ${command}`);
   }
 
   await client.close();
 }
 
-run()
-  .then(() => {})
-  .catch((err) => {
-    console.error(err);
-  });
+// ---------------------------
+// CLI Setup
+// ---------------------------
+const program = new Command();
+
+program
+  .name("mondex")
+  .description("CLI to index MongoDB collections")
+  .version(process.env.npm_package_version || "0.0.0")
+  .action(() => {
+    program.help();
+  })
+  .showHelpAfterError(true);
+
+program
+  .command("plan")
+  .description("Shows the indexes that will be created and dropped")
+  .action(plan);
+
+program
+  .command("apply")
+  .description("Executes the plan and applies the changes to the database")
+  .action(apply);
+
+program
+  .command("pull")
+  .description("Creates the index configuration file from the database")
+  .action(pull);
+
+program.commands.forEach((command) => {
+  command
+    .option(
+      "-f, --file <file>",
+      "path to the file containing the indexes",
+      path.join(process.cwd(), "./indexes.json")
+    )
+    .requiredOption("-i --uri <uri>", "connection string for MongoDB")
+    .requiredOption("-d, --db <database>", "database name");
+});
+
+program.parse();

@@ -1,10 +1,20 @@
 {
   "compilerOptions": {
-    "target": "es2016" ,
-    "module": "commonjs" ,
-    "esModuleInterop": true ,
-    "forceConsistentCasingInFileNames": true ,
-    "strict": true ,
-    "skipLibCheck": true
-  }
+    "target": "esnext",
+    "lib": ["esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "outDir": "dist",
+    "noEmit": true
+  },
+  "exclude": ["node_modules", "dist"],
+  "include": ["**/*.ts"]
 }
