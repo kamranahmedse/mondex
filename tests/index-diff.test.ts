@@ -26,13 +26,11 @@ describe("getIndexDiff", () => {
     const expectedIndexDiff = [
       {
         collection: "collection1",
-        cap: 0,
         toCreate: [{ name: "index4", keys: { field4: 1 } }],
         toDrop: [],
       },
       {
         collection: "collection2",
-        cap: 0,
         toCreate: [{ name: "index5", keys: { field5: 1 } }],
         toDrop: [],
       },
@@ -47,7 +45,6 @@ describe("getIndexDiff", () => {
     const expectedIndexDiff = [
       {
         collection: "collection1",
-        cap: 0,
         toCreate: [],
         toDrop: [{ name: "index2", keys: { field2: -1 } }],
       },
