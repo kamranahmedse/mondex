@@ -1,6 +1,6 @@
 ## mondex
 
-> CLI tool to create and manage MongoDB indexes
+> CLI tool to create and manage MongoDB indexes using code
 
 ## Installation
 
