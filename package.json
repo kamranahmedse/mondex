@@ -1,6 +1,6 @@
 {
   "name": "mondex",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI to index MongoDB collections",
   "type": "module",
   "author": {

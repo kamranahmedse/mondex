@@ -209,7 +209,7 @@ const program = new Command();
 program
   .name("mondex")
   .description("CLI to index MongoDB collections")
-  .version(process.env.npm_package_version || "0.0.0")
+  .version(require("../package.json").version || "0.0.0")
   .action(() => {
     program.help();
   })
