@@ -122,18 +122,18 @@ async function applyDiff(diff: IndexDiff) {
 }
 
 async function run() {
+  // TODO: CLI Arguments
+  // command can either be plan or apply
   let command: string = "apply";
+  let connectionString: string = "mongodb://localhost:27017/roadmapsh";
+  let dbName = "roadmapsh";
+  let filePath: string = path.join(__dirname, "./indexes.json");
 
-  if (Math.random() == 2) {
-    command = "plan";
-  }
-
-  client = await MongoClient.connect("mongodb://localhost:27017/roadmapsh");
-  db = client.db("roadmapsh");
-  const filePath = path.join(__dirname, "./indexes.json");
+  client = await MongoClient.connect(connectionString);
+  db = client.db(dbName);
 
   const existingIndexes = await getAllIndexes();
-  const givenIndexes = await prepareGivenIndexes(filePath);
+  const givenIndexes = prepareGivenIndexes(filePath);
 
   const indexDiff = getIndexDiff(existingIndexes, givenIndexes);
 
