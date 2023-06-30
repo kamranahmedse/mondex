@@ -70,6 +70,31 @@ Given below is a sample JSON file representing sample index configuration:
 
 Once you have the JSON file ready, you can use the `mondex` to start managing your indexes.
 
+### Unique and TTL Indexes
+
+You can also specify the unique and TTL indexes as a part of index configuration. Mondex supports two special fields `@isUnique` and `@expireAfterSeconds` as a part of index configuration; if found in the list of columns, relevant index will be considered as a unique or TTL index.
+
+For example, `user.email` in the following configuration will be considered as a unique index, while `activity_log.createdAt` [will be a TTL index](https://www.mongodb.com/docs/manual/core/index-ttl/)
+
+```json
+[
+  {
+    "collection": "user",
+    "indexes": [
+      { "email": -1, "@isUnique": true },
+      { "userType": -1, "createdAt": -1 },
+      { "organizationId": -1, "userId": -1, "isActive": -1 }
+    ]
+  },
+  {
+    "collection": "activity_log",
+    "indexes": [
+      { "createdAt": -1, "@expireAfterSeconds": 86400 },
+    ]
+  }
+]
+```
+
 ## Examples
 
 > Show the indexes that will be created and dropped
